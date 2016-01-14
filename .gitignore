@@ -1,0 +1,11 @@
+doc/
+Tutorial/
+TestData/
+msmbuilder_1.0_test/
+test_kcenters/
+*.pyc
+*.png
+*.txt
+*.mtx
+*.swp
+*.so
