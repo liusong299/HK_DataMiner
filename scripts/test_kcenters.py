@@ -31,6 +31,7 @@ cli.add_argument('-m',   '--n_macro_states', help='''n_macro_states.''',
                  default=6, type=int)
 cli.add_argument('-s',   '--stride', help='stride.',
                  default=None, type=int)
+cli.add_argument('-l', '--alignment', default=False, type=bool)
 
 args = cli.parse_args()
 trajlistname = args.trajListFns
@@ -44,27 +45,38 @@ stride = args.stride
 # ===========================================================================
 # Reading Trajs from XTC files
 print "stride:", stride
-trajreader = XTCReader(trajlistname, atom_indicesname, homedir, trajext, File_TOP,nSubSample=stride)
+trajreader = XTCReader(trajlistname, atom_indicesname, homedir, trajext, File_TOP, nSubSample=stride)
 trajs = trajreader.trajs
 traj_len = trajreader.traj_len
 np.savetxt("./traj_len.txt", traj_len, fmt="%d")
 
-if os.path.isfile("./phi_angles.txt") and os.path.isfile("./psi_angles.txt") is True:
-    phi_angles = np.loadtxt("./phi_angles.txt", dtype=np.float32)
-    psi_angles = np.loadtxt("./psi_angles.txt", dtype=np.float32)
-    phi_psi = np.column_stack((phi_angles, psi_angles))
-else:
-    #trajreader = XTCReader(trajlistname, atom_indicesname, homedir, trajext, File_TOP)
-    #trajs = trajreader.trajs
-    #traj_len = trajreader.traj_len
-    #np.savetxt("./traj_len.txt", traj_len, fmt="%d")
-    phi_angles, psi_angles = trajreader.get_phipsi(trajs, psi=[6, 8, 14, 16], phi=[4, 6, 8, 14])
-    phi_psi = np.column_stack((phi_angles, psi_angles))
-    np.savetxt("./phi_angles.txt", phi_angles, fmt="%f")
-    np.savetxt("./psi_angles.txt", psi_angles, fmt="%f")
-#phi_angles, psi_angles = trajreader.get_phipsi(trajs, psi=[6, 8, 14, 16], phi=[4, 6, 8, 14])
-#phi_psi=np.column_stack((phi_angles, psi_angles))
+# ===========================================================================
+## get phi psi angles for Alanine Dipeptide
+#if os.path.isfile("./phi_angles.txt") and os.path.isfile("./psi_angles.txt") is True:
+#    phi_angles = np.loadtxt("./phi_angles.txt", dtype=np.float32)
+#    psi_angles = np.loadtxt("./psi_angles.txt", dtype=np.float32)
+#    phi_psi = np.column_stack((phi_angles, psi_angles))
+#else:
+#    phi_angles, psi_angles = trajreader.get_phipsi(trajs, psi=[6, 8, 14, 16], phi=[4, 6, 8, 14])
+#    np.savetxt("./phi_angles.txt", phi_angles, fmt="%f")
+#    np.savetxt("./psi_angles.txt", psi_angles, fmt="%f")
 
+# ===========================================================================
+# superpose
+print "Alignment", args.alignment
+if args.alignment is True:
+    align_atom_indices = np.loadtxt('align_atom_indices', dtype=np.int32).tolist()
+    print "align_atom_indices:", align_atom_indices
+    trajs.superpose(reference=trajs[0], frame=0, atom_indices=align_atom_indices)
+    print "Alignment done."
+# ===========================================================================
+
+# ===========================================================================
+# Just keep the atoms in atom indices, remove other atoms
+atom_indices = np.loadtxt('atom_indices', dtype=np.int32).tolist()
+print "atom_indices:", atom_indices
+trajs.atom_slice(atom_indices, inplace=True) #just keep the the atoms in atom indices
+print trajs
 # ===========================================================================
 # do Clustering using KCenters method
 #cluster = KCenters(n_clusters=n_clusters, metric="euclidean", random_state=0)
@@ -86,4 +98,4 @@ np.savetxt("cluster_centers_"+clustering_name+".txt", cluster_centers_, fmt="%d"
 
 #plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=clustering_name)
 #calculate_landscape(labels=labels, centers=cluster_centers_, phi_angles=phi_angles, psi_angles=psi_angles, potential=False, name=clustering_name)
-calculate_population(labels=labels, name=clustering_name)
+#calculate_population(labels=labels, name=clustering_name)

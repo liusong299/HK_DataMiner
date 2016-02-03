@@ -41,14 +41,8 @@ class TrajReader:
         return os.getcwd()
 
     def get_atom_indices(self, indices_filename, indices_dir):
-        #indices_dir = self.homedir
-        #indices_filename = self.atomlistName
         if indices_filename != None:
-            indices_file = open( indices_filename )
-            #indices_file = open( indices_dir + '/' + indices_filename )
-            atom_indices = map(int, indices_file.read().split(' '))
-            indices_file.close()
-            del atom_indices[ 0 ]
+            atom_indices = np.loadtxt(indices_filename, dtype=np.int32).tolist()
             return atom_indices
         else:
             return None
@@ -84,7 +78,7 @@ class XTCReader(TrajReader):
         for frame in framelist:
             print 'Reading: ', frame
             #traj = md.load(frame, top=self.File_TOP, atom_indices=self.atom_indices)
-            traj = md.load(frame, discard_overlapping_frames=True, top=self.File_TOP, atom_indices=self.atom_indices,
+            traj = md.load(frame, discard_overlapping_frames=True, top=self.File_TOP, #atom_indices=self.atom_indices,
                            stride=self.nSubSample)
             #traj = traj[:-1] #remove last one
             trajs.append(traj)
