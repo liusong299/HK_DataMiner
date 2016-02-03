@@ -4,7 +4,7 @@ __author__ = 'stephen'
 import os,sys
 import numpy as np
 import argparse
-
+import mdtraj as md
 # ===============================================================================
 # LOCAL IMPORTS:
 HK_DataMiner_Path = os.path.relpath(os.pardir)
@@ -78,26 +78,29 @@ print "atom_indices:", atom_indices
 trajs_sub_atoms = trajs.atom_slice(atom_indices, inplace=False) #just keep the the atoms in atom indices
 print "Trajs:", trajs
 print "Sub_atoms_trajs:", trajs_sub_atoms
+
 # ===========================================================================
-# do Clustering using KCenters method
+# Reading Clustering Centers
+centers = md.load("cluster_centers_sub_atoms.pdb")
+print "Centers:", centers
+# ===========================================================================
+# do Assigning using KCenters method
 #cluster = KCenters(n_clusters=n_clusters, metric="euclidean", random_state=0)
-cluster = KCenters(n_clusters=n_clusters, metric="rmsd", random_state=0)
+cluster = KCenters(centers=centers, n_clusters=n_clusters, metric="rmsd", random_state=0)
 print cluster
 #cluster.fit(phi_psi)
-cluster.fit(trajs_sub_atoms)
+#cluster.fit(trajs_sub_atoms)
+cluster.assign(trajs_sub_atoms, cluster)
 
 labels = cluster.labels_
 print labels
 n_microstates = len(set(labels)) - (1 if -1 in labels else 0)
 print('Estimated number of clusters: %d' % n_microstates)
 
-cluster_centers_ = cluster.cluster_centers_
 # plot micro states
-clustering_name = "kcenters_n_" + str(n_microstates)
+clustering_name = "kcenters_assign_n_" + str(n_microstates)
 np.savetxt("assignments_"+clustering_name+".txt", labels, fmt="%d")
-np.savetxt("cluster_centers_"+clustering_name+".txt", cluster_centers_, fmt="%d")
-trajs[cluster_centers_].save("cluster_centers.pdb")
-trajs_sub_atoms[cluster_centers_].save("cluster_centers_sub_atoms.pdb")
+
 
 #plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=clustering_name)
 #calculate_landscape(labels=labels, centers=cluster_centers_, phi_angles=phi_angles, psi_angles=psi_angles, potential=False, name=clustering_name)

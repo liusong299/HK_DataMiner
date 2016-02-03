@@ -26,9 +26,9 @@ def pairwise_distances(X, Y=None, index=None, metric="euclidean"):
         if Y is None:
             distances_ = md.rmsd(X, X, index, parallel=True, precentered=True)
         else:
-            distances_ = np.empty((len(X), len(Y)), dtype=np.float32)
-            for i in xrange(len(Y)):
-                distances_[i] = md.rmsd(X, Y, i, parallel=True, precentered=True)
+            #distances_ = np.empty((len(X), len(Y)), dtype=np.float32)
+           # for i in xrange(len(Y)):
+            distances_ = md.rmsd(X, Y, index, parallel=True, precentered=True)
         return distances_
     else:
         if Y is None:

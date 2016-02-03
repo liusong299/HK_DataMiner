@@ -63,7 +63,7 @@ np.savetxt("./traj_len.txt", traj_len, fmt="%d")
 
 # ===========================================================================
 # superpose
-print "Alignment", args.alignment
+print "Alignment?", args.alignment
 if args.alignment is True:
     align_atom_indices = np.loadtxt('align_atom_indices', dtype=np.int32).tolist()
     print "align_atom_indices:", align_atom_indices
@@ -75,15 +75,16 @@ if args.alignment is True:
 # Just keep the atoms in atom indices, remove other atoms
 atom_indices = np.loadtxt('atom_indices', dtype=np.int32).tolist()
 print "atom_indices:", atom_indices
-trajs.atom_slice(atom_indices, inplace=True) #just keep the the atoms in atom indices
-print trajs
+trajs_sub_atoms = trajs.atom_slice(atom_indices, inplace=False) #just keep the the atoms in atom indices
+print "Trajs:", trajs
+print "Sub_atoms_trajs:", trajs_sub_atoms
 # ===========================================================================
 # do Clustering using KCenters method
 #cluster = KCenters(n_clusters=n_clusters, metric="euclidean", random_state=0)
 cluster = KCenters(n_clusters=n_clusters, metric="rmsd", random_state=0)
 print cluster
 #cluster.fit(phi_psi)
-cluster.fit(trajs)
+cluster.fit(trajs_sub_atoms)
 
 labels = cluster.labels_
 print labels
@@ -95,6 +96,8 @@ cluster_centers_ = cluster.cluster_centers_
 clustering_name = "kcenters_n_" + str(n_microstates)
 np.savetxt("assignments_"+clustering_name+".txt", labels, fmt="%d")
 np.savetxt("cluster_centers_"+clustering_name+".txt", cluster_centers_, fmt="%d")
+trajs[cluster_centers_].save("cluster_centers.pdb")
+trajs_sub_atoms[cluster_centers_].save("cluster_centers_sub_atoms.pdb")
 
 #plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=clustering_name)
 #calculate_landscape(labels=labels, centers=cluster_centers_, phi_angles=phi_angles, psi_angles=psi_angles, potential=False, name=clustering_name)
