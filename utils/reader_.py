@@ -100,7 +100,7 @@ class XTCReader(TrajReader):
         for i in xrange(len(phi)):
             PHI_INDICES.append(self.atom_indices.index(phi[i]))
             PSI_INDICES.append(self.atom_indices.index(psi[i]))
-        len_trajs = len(trajs)
+        #len_trajs = len(trajs)
         print "PSI:", PSI_INDICES
         print "PHI:", PHI_INDICES
         phi_angles = md.compute_dihedrals(trajs, [PHI_INDICES]) * 180.0 / np.pi

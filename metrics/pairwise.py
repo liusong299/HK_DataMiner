@@ -32,8 +32,8 @@ def pairwise_distances(X, Y=None, index=None, metric="euclidean"):
         return distances_
     else:
         if Y is None:
-            print "if Y is None"
-            return sp.pairwise_distances(X, X[index], metric=metric)
+            #print "if Y is None"
+            return sp.pairwise_distances(X, X[index], metric=metric, n_jobs=1)
         if index is None:
-            print "if index is None, pairwise XX"
-            return sp.pairwise_distances(X, X, metric=metric)
+            #print "if index is None, pairwise XX"
+            return sp.pairwise_distances(X, X, metric=metric, n_jobs=1)
