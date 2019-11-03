@@ -7,7 +7,7 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import matplotlib.pylab as pylab
-from utils import get_subindices
+from .utils import get_subindices
 import matplotlib.ticker as mtick
 from collections import Counter
 from sklearn.neighbors.kde import KernelDensity
@@ -115,7 +115,7 @@ def contour_cluster(labels, phi_angles, psi_angles, name, outliers=-1):
     for i in np.unique(labels):
         #if i != outliers:
         if i == 1:
-            print "i=", i
+            print("i=", i)
             x = phi_angles[np.where(labels == i)]
             y = psi_angles[np.where(labels == i)]
             indices = get_subindices(assignments=x, state=None, samples=1000)
@@ -190,7 +190,7 @@ def plot_matrix(tProb_=None, name=None):
     plt.close()
 
 def plot_block_matrix(labels, tProb_, name='BlockMatrix'):
-    print "Plot Block Matrix"
+    print("Plot Block Matrix")
     indices = np.argsort(labels)
     #print indices
     block_matrix = tProb_[:,indices]
@@ -217,12 +217,12 @@ def plot_cluster_size_distribution(populations, name='Populations'):
     for i in xrange(1, len(populations)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
-    print X_xtick
+    print(X_xtick)
     #plt.xticks(X , ('$10^0$', '$10^1$', '$10^2$', '$10^3$', '$10^4$'))
     plt.xticks(np.arange(len(populations)+1), X_xtick)
     plt.ylabel(r"Probability")
     plt.ylim([0,100])
-    print "X:", X
+    print("X:", X)
     distrib.bar(X, populations*100, facecolor='black', edgecolor='white', width=1.0) #facecolor='#f78181',
     plt.savefig('./' + name + '_Distribution.png', dpi=400)
     plt.close()
@@ -244,10 +244,10 @@ def plot_compare_cluster_size_distribution(populations_1, populations_2, name='P
     for i in xrange(1, len(populations_1)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
-    print X_xtick
+    print(X_xtick)
     #plt.xticks(X , ('$10^0$', '$10^1$', '$10^2$', '$10^3$', '$10^4$'))
 
-    print "X:", X
+    print("X:", X)
     distrib.bar(X, populations_1*100, facecolor='black', edgecolor='white', width=bar_width,label="kNN Density Peaks 3645 states") #facecolor='#f78181',
 
     #  populations_2
@@ -256,10 +256,10 @@ def plot_compare_cluster_size_distribution(populations_1, populations_2, name='P
     for i in xrange(1, len(populations_2)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
-    print X_xtick
+    print(X_xtick)
     #plt.xticks(X , ('$10^0$', '$10^1$', '$10^2$', '$10^3$', '$10^4$'))
 
-    print "X:", X
+    print("X:", X)
     distrib.bar(X+bar_width, populations_2*100, facecolor='gray', edgecolor='white', width=bar_width, label="kNN Density Peaks 117 states") #facecolor='#f78181',
     plt.xticks(np.arange(len(populations_1)+1+bar_width), X_xtick)
 
@@ -272,7 +272,7 @@ def plot_compare_cluster_size_distribution(populations_1, populations_2, name='P
     #plt.show()
 
 #From Wang Wei's code
-def plot_landscape(labels=None, phi_angles=None, psi_angles=None, phi_ctr=None, psi_ctr=None, name='Energy_Landscape', bins=36, potential=False):
+def plot_landscape(labels=None, phi_angles=None, psi_angles=None, phi_ctr=None, psi_ctr=None, name='Energy_Landscape', bins=80, potential=False):
     H, xedges, yedges = np.histogram2d(psi_angles, phi_angles, bins=bins)
     #since we calculate total number in 10 interval, thus bin of every dimension must be 36
     #If element in H is zero, set the final energy to be 9
@@ -296,20 +296,20 @@ def plot_landscape(labels=None, phi_angles=None, psi_angles=None, phi_ctr=None, 
     distribution = np.array([0,0,0,0,0,0,0,0,0,0], dtype=np.float64)
     #print "len phi_ctr", len(phi_ctr)
     #print "shape of xedges", xedges.shape
-    for i in xrange(0, len(phi_ctr)):
-        if psi_ctr[i] > 179.0:
+    for i in range(0, len(phi_angles)):
+        if psi_angles[i] > 179.0:
             index_x = np.where(xedges > 179.0)[0][0] - 1
         else:
-            index_x = np.where(xedges > psi_ctr[i])[0][0] - 1
-        if phi_ctr[i] > 179.0:
+            index_x = np.where(xedges > psi_angles[i])[0][0] - 1
+        if phi_angles[i] > 179.0:
             index_y = np.where(yedges > 179.0)[0][0] - 1
         else:
-            index_y = np.where(yedges > phi_ctr[i])[0][0] - 1
+            index_y = np.where(yedges > phi_angles[i])[0][0] - 1
 
         index_distrib = int(H[index_x][index_y])
         distribution[index_distrib] += 1
-    distribution /= len(phi_ctr)
-    print distribution
+    distribution /= len(phi_angles)
+    print(distribution)
        # print "clenter:", i, "[", phi_ctr,",", psi_ctr,"]", "H=", H[index_x][index_y]
     plt.xlabel('$\phi$', fontsize=20)
     plt.ylabel('$\Psi$', fontsize=20)
@@ -385,7 +385,7 @@ def plot_compare_distribution(labels_1=None, labels_2=None, phi_angles=None, psi
         index_distrib = int(H[index_x][index_y])
         distribution_1[index_distrib] += 1
     distribution_1 /= len(phi_ctr_1)
-    print distribution_1
+    print(distribution_1)
 
     distribution_2 = np.array([0,0,0,0,0,0,0,0,0,0], dtype=np.float64)
     for i in xrange(0, len(phi_ctr_2)):
@@ -401,7 +401,7 @@ def plot_compare_distribution(labels_1=None, labels_2=None, phi_angles=None, psi
         index_distrib = int(H[index_x][index_y])
         distribution_2[index_distrib] += 1
     distribution_2 /= len(phi_ctr_2)
-    print distribution_2
+    print(distribution_2)
        # print "clenter:", i, "[", phi_ctr,",", psi_ctr,"]", "H=", H[index_x][index_y]
     plt.xlabel('$\phi$', fontsize=20)
     plt.ylabel('$\Psi$', fontsize=20)
@@ -498,7 +498,7 @@ def plot_landscape_barrier(labels=None, selected=1, phi_angles=None, psi_angles=
         index_distrib = int(H[index_x][index_y])
         distribution[index_distrib] += 1
     distribution /= len(phi_ctr)
-    print distribution
+    print(distribution)
        # print "clenter:", i, "[", phi_ctr,",", psi_ctr,"]", "H=", H[index_x][index_y]
     plt.xlabel('$\phi$', fontsize=20)
     plt.ylabel('$\Psi$', fontsize=20)
@@ -517,13 +517,13 @@ def plot_landscape_barrier(labels=None, selected=1, phi_angles=None, psi_angles=
     plt.close()
 
 def calculate_population(labels, name='Populations'):
-    print "Calculating and plotting population..."
+    print("Calculating and plotting population...")
     counts = list(Counter(labels).values())
     total_states = np.max(labels) + 1
     #states_magnitude = int(np.ceil(np.log10(total_states)))
     total_frames = len(labels)
     frames_magnitude = int(np.ceil(np.log10(total_frames)))
-    print "states", total_states, "frames", total_frames
+    print("states", total_states, "frames", total_frames)
 
     populations = np.zeros(frames_magnitude+1)
     for i in counts:
@@ -533,25 +533,25 @@ def calculate_population(labels, name='Populations'):
             populations[magnitude] += 1
 
     #print magnitude populations
-    print "Populations Probability:"
+    print("Populations Probability:")
     #bins = [0]
     for i in xrange(len(populations)):
         populations[i] = populations[i] / total_states
-        print "10 ^", i, "to", "10 ^", i+1,":", populations[i]*100, "%"
+        print("10 ^", i, "to", "10 ^", i+1,":", populations[i]*100, "%")
         #bins.append(10**(i+1))
 
     name += '_Populations'
-    print "name:", name
+    print("name:", name)
     plot_cluster_size_distribution(populations=populations, name=name)
-    print "Done."
+    print("Done.")
 
 def compare_population(labels_1, labels_2, name='Compare_Populations'):
-    print "Calculating and plotting population..."
+    print("Calculating and plotting population...")
     counts = list(Counter(labels_1).values())
     total_states = np.max(labels_1) + 1
     total_frames = len(labels_1)
     frames_magnitude = int(np.ceil(np.log10(total_frames)))
-    print "states", total_states, "frames", total_frames
+    print("states", total_states, "frames", total_frames)
 
     populations_1 = np.zeros(frames_magnitude+1)
     for i in counts:
@@ -560,17 +560,17 @@ def compare_population(labels_1, labels_2, name='Compare_Populations'):
             magnitude = np.ceil(log_i)
             populations_1[magnitude] += 1
 
-    print "Populations Probability:"
+    print("Populations Probability:")
     for i in xrange(len(populations_1)):
         populations_1[i] = populations_1[i] / total_states
-        print "10 ^", i, "to", "10 ^", i+1,":", populations_1[i]*100, "%"
+        print("10 ^", i, "to", "10 ^", i+1,":", populations_1[i]*100, "%")
 
 
     counts = list(Counter(labels_2).values())
     total_states = np.max(labels_2) + 1
     total_frames = len(labels_2)
     frames_magnitude = int(np.ceil(np.log10(total_frames)))
-    print "states", total_states, "frames", total_frames
+    print("states", total_states, "frames", total_frames)
 
     populations_2 = np.zeros(frames_magnitude+1)
     for i in counts:
@@ -579,25 +579,25 @@ def compare_population(labels_1, labels_2, name='Compare_Populations'):
             magnitude = np.ceil(log_i)
             populations_2[magnitude] += 1
 
-    print "Populations Probability:"
+    print("Populations Probability:")
     for i in xrange(len(populations_2)):
         populations_2[i] = populations_2[i] / total_states
-        print "10 ^", i, "to", "10 ^", i+1,":", populations_2[i]*100, "%"
+        print("10 ^", i, "to", "10 ^", i+1,":", populations_2[i]*100, "%")
 
     name += '_Populations'
-    print "name:", name
+    print("name:", name)
     plot_compare_cluster_size_distribution(populations_1=populations_1, populations_2=populations_2, name=name)
     #plot_cluster_size_distribution(populations_1=populations_1, name=name)
-    print "Done."
+    print("Done.")
 
 def calculate_landscape(labels, centers, phi_angles, psi_angles, potential=False, name='Energy_Landscape'):
-    print "Calculating and plotting Landscape..."
+    print("Calculating and plotting Landscape...")
     phi_ctr = phi_angles[centers]
     psi_ctr = psi_angles[centers]
     labels_ctr = labels[centers]
 
     name = name + '_Energy_Landscape'
-    print "name:", name
+    print("name:", name)
     plot_landscape(labels=labels_ctr, phi_angles=phi_angles, psi_angles=psi_angles, phi_ctr=phi_ctr, psi_ctr=psi_ctr, potential=potential, name=name)
-    print "Done"
+    print("Done")
     #plot_landscape(labels=None, phi_angles=phi_angles, psi_angles=psi_angles)

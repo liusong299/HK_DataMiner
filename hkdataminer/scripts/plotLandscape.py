@@ -43,17 +43,17 @@ else:
 # Reading split assignments and the length of each traj
 assignments_dir = args.assignments
 labels = np.loadtxt(assignments_dir, dtype=np.int32)
-centers_dir = args.centers
-centers = np.loadtxt(centers_dir, dtype=np.int32)
+#centers_dir = args.centers
+#centers = np.loadtxt(centers_dir, dtype=np.int32)
 #plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=dir+'Dihedrals'+assignments_dir)
 
-phi_ctr = phi_angles[centers]
-psi_ctr = psi_angles[centers]
-labels_ctr = labels[centers]
+#phi_ctr = phi_angles[centers]
+#psi_ctr = psi_angles[centers]
+#labels_ctr = labels[centers]
 #plot_cluster(labels=labels_lf, phi_angles=phi_new, psi_angles=psi_new, name=clustering_name)
 
 name = assignments_dir[:-4] + '_Energy_Landscape'
-print "name:", name
+#print "name:", name
 #plot_cluster_size_distribution(populations=populations, name=name)
-plot_landscape(labels=labels_ctr, phi_angles=phi_angles, psi_angles=psi_angles, phi_ctr=phi_ctr, psi_ctr=psi_ctr, name=name)
+plot_landscape(labels=None, phi_angles=phi_angles, psi_angles=psi_angles, phi_ctr=None, psi_ctr=None, name=name)
 #plot_landscape(labels=None, phi_angles=phi_angles, psi_angles=psi_angles)

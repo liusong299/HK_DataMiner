@@ -54,13 +54,13 @@ def k_centers(X, n_clusters=8, metric='rmsd', random_state=None):
         seed = check_random_state(None).randint(0, n_samples)
     else:
         seed = random_state
-    print "seed=", seed
+    print("seed=", seed)
     cluster_centers_ = []
     cluster_centers_.append(seed)  #seed = random
     distances_ = pairwise_distances(X, index=seed, metric=metric)
     labels_ = np.zeros(len(X), dtype=np.int32)
 
-    for i in xrange(1, n_clusters):
+    for i in range(1, n_clusters):
         MaxIndex = np.argmax(distances_)
         cluster_centers_.append(MaxIndex)
         #set the furthest point from existing center as a new center
@@ -112,14 +112,14 @@ def k_centers_assign(X, centers=None, n_clusters=8, metric='rmsd', random_state=
     """
     n_samples = len(X)
     if centers is None:
-        print "No Cluster Centers found!"
+        print("No Cluster Centers found!")
 
     n_centers = len(centers)
-    print "N_Centers:", n_centers
-    print "N_samples:", n_samples
+    print("N_Centers:", n_centers)
+    print("N_samples:", n_samples)
     labels_ = np.zeros(n_samples, dtype=np.int32)
     #distances_ = np.zeros(n_centers, dtype=np.float32)
-    for i in xrange(0, n_samples):
+    for i in range(0, n_samples):
         distances_ = pairwise_distances(X=centers, Y=X, index=i, metric=metric)
         #distances_ = md.rmsd(centers, X, i, parallel=True, precentered=True)
         cluster_num = np.argmin(distances_)
@@ -178,7 +178,7 @@ class KCenters(BaseEstimator, ClusterMixin):
         self.cluster_centers_, self.labels_ = \
             k_centers(X, n_clusters=self.n_clusters,  metric=self.metric, random_state=self.random_state)
         t1 = time.time()
-        print "K-Centers clustering Time Cost:", t1 - t0
+        print("K-Centers clustering Time Cost:", t1 - t0)
         return self
 
     def assign(self, X, cluster_centers_frames):
@@ -190,7 +190,7 @@ class KCenters(BaseEstimator, ClusterMixin):
         t0 = time.time()
         self.labels_ = k_centers_assign(X, centers=self.centers, n_clusters=self.n_clusters,  metric=self.metric, random_state=self.random_state)
         t1 = time.time()
-        print "K-Centers assigning Time Cost:", t1 - t0
+        print("K-Centers assigning Time Cost:", t1 - t0)
         return self
 
 

@@ -2,7 +2,7 @@ import mdtraj as md
 import os
 import operator
 import numpy as np
-
+from functools import reduce 
 class TrajReader:
     '''
     def __init__(self, trajlistName, atomlistName, trajDir, trajExt, File_TOP):
@@ -74,9 +74,9 @@ class XTCReader(TrajReader):
     def read_trajs(self, framelist):
         trajs = []
         traj_len = []
-        print "Reading trajs..."
+        print("Reading trajs...")
         for frame in framelist:
-            print 'Reading: ', frame
+            print('Reading: ', frame)
             #traj = md.load(frame, top=self.File_TOP, atom_indices=self.atom_indices)
             traj = md.load(frame, discard_overlapping_frames=True, top=self.File_TOP, #atom_indices=self.atom_indices,
                            stride=self.nSubSample)
@@ -85,9 +85,9 @@ class XTCReader(TrajReader):
             traj_len.append(len(traj))
 
         len_trajs = len(trajs)
-        whole_trajs= reduce(operator.add, (trajs[i] for i in xrange(len_trajs)))
-        print "Done."
-        print len_trajs, "trajs,", len(whole_trajs), "frames."
+        whole_trajs= reduce(operator.add, (trajs[i] for i in range(len_trajs)))
+        print("Done.")
+        print(len_trajs, "trajs,", len(whole_trajs), "frames.")
         #print "debug output: len_trajs", len_trajs, "len_whole_trajs", len(whole_trajs)
 
         return whole_trajs, traj_len
@@ -97,12 +97,12 @@ class XTCReader(TrajReader):
         #psi = [4, 6, 8, 14]
         PHI_INDICES = []
         PSI_INDICES = []
-        for i in xrange(len(phi)):
+        for i in range(len(phi)):
             PHI_INDICES.append(self.atom_indices.index(phi[i]))
             PSI_INDICES.append(self.atom_indices.index(psi[i]))
         #len_trajs = len(trajs)
-        print "PSI:", PSI_INDICES
-        print "PHI:", PHI_INDICES
+        print("PSI:", PSI_INDICES)
+        print("PHI:", PHI_INDICES)
         phi_angles = md.compute_dihedrals(trajs, [PHI_INDICES]) * 180.0 / np.pi
         psi_angles = md.compute_dihedrals(trajs, [PSI_INDICES]) * 180.0 / np.pi
         #phi_psi=np.column_stack((phi_angles, psi_angles))
@@ -151,37 +151,47 @@ class AmberReader(TrajReader):
         trajs = []
         for frame in framelist:
             #framedata = []
-            print 'Reading: ', frame
+            print('Reading: ', frame)
             traj = md.load_netcdf(frame, self.File_TOP, stride=self.nSubSample)
             trajs.append(traj)
 
         return trajs
 
 class VectorReader(TrajReader):
-    def __init__(self, trajlistName, atomlistName=None, homedir='.', trajExt='txt', File_TOP=None, nSubSample=None):
+    def __init__(self, trajlistName, atomlistName=None, homedir='.', trajExt='txt', File_TOP=None, stride=None, framefile=None):
         self.trajlistName = trajlistName
         #self.atomlistName = atomlistName
         self.trajDir = homedir
         self.trajExt = trajExt
         #self.File_TOP = File_TOP
         self.homedir = homedir
-        #self.nSubSample = nSubSample
+        self.stride = stride
         #self.homedir = self.get_homedir()
-        self.trajlist_list = self.get_trajlist(trajlistName, self.homedir)
-        self.framefile_list = self.get_framefile_list(self.trajlist_list)
+        if framefile is not None:
+            self.framefile_list = self.get_framefile(framefile)
+        else:
+            self.trajlist_list = self.get_trajlist(trajlistName, self.homedir)
+            self.framefile_list = self.get_framefile_list(self.trajlist_list)
         #self.atom_indices = self.get_atom_indices( atomlistName, self.homedir)
-        self.trajs = self.read_trajs(self.framefile_list)
+        self.trajs, self.traj_len = self.read_trajs(self.framefile_list)
 
     def read_trajs(self, framelist):
         #data = []
         trajs = []
+        traj_len = []
         for frame in framelist:
             #framedata = []
-            print 'Reading: ', frame
-            traj = np.loadtxt(frame, usecols=(0, 1), dtype='float32')
-            traj = traj[:-1] #remove last one
+            print('Reading: ', frame)
+            traj = np.loadtxt(frame, dtype='float32')
+            #traj = traj[:-1] #remove last one
+            if self.stride is not None:
+                len_traj = len(traj)
+                traj = traj[0:len_traj:self.stride]
             len_traj = len(traj)
-            traj = traj[0:len_traj:10]
             trajs.extend(traj)
-        print "Total Points:", len(trajs)
-        return trajs
+            traj_len.append(len_traj)
+        print("Total Points:", len(trajs))
+        return np.asarray(trajs), traj_len
+
+
+
