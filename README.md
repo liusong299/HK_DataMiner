@@ -18,7 +18,7 @@ We highly recommend that you download the Python 3.7 version of Anaconda, which 
 ## 1.Introduction and Alanine Dipeptide
 
 ## 2.Move to tutorial directory Assuming you’ve in the MD Data Miner folder, move to the Tutorial directory.
-`cd Tutorial’`
+`cd Tutorial`
 
 ## 3.Cluster your data The following command clusters your data using the RMSD metric by k-centers clustering method.
 `python ../scripts/test_kcenters.py  -n 500`
