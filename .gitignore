@@ -1,5 +1,5 @@
 .idea/
-doc/
+/doc/build
 hkdataminer/Tutorial/
 *.pyc
 *.png
