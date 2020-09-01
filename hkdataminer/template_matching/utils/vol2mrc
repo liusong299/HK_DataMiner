@@ -1,0 +1,1 @@
+ xmipp_image_convert -i open.vol -o open.mrc
