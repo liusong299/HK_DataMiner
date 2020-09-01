@@ -45,10 +45,13 @@ Dataset: Each dataset is consisted of template structures and experimental struc
 simulation dataset, the other is real dataset. We provide simualtion dataset: open.vol, close.vol, intermediate.vol(same as test data and templates) 
 and real dataset:6P1K.vol(test data), H_EV2_red.vol, H_EV2_grey.vol, H_EV2_blue.vol(templates)
 
-Preprocess: you can use command: `xmipp_xmipp_volume_from_pdb -i open.pdb -o open.vol`     transfer pdb file to vol file
-                                   `xmipp_image_convert -i open.vol -o open.mrc`            transfer vol file to mrc file
+Preprocess: you can use command: 
+`xmipp_xmipp_volume_from_pdb -i open.pdb -o open.vol`     transfer pdb file to vol file
+
+`xmipp_image_convert -i open.vol -o open.mrc`            transfer vol file to mrc file
 
 run our algorithm: `python TSTM.py --datatype='sim' --vol_size=128`, the output is '2nd_stage_brute_force_classification_result.dat' 
+
 and `python ./two_stage_matching/analyze_population.py` to obatin population
 
 # Deployment
