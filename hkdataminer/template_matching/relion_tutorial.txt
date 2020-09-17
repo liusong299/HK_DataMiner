@@ -1,0 +1,24 @@
+####Reconstruction in relion
+For the experimental data, you can follow the tutorial.
+
+
+For the simulated data, 
+###normalise the background to average zero and stddev one
+1. you need to do relion_preprocess -operate_on data.mrcs --norm --bg_radius 50 (this is the background value, about 40% of pixel size) 
+output: preprocessed.mrcs
+
+###We ignore the extract particles from micrograph, particle picking and 2D class average because our 2D images are clean enough. It is 
+noticed that it is necessary to install the mpi to speed up the algorithm
+2. 
+mpirun -np 30 relion_refine_mpi --o ./mix_job/InitialModel/job001/run --sgd_ini_iter 20 --sgd_inbetween_iter 100 --sgd_fin_iter 20 --sgd_write_iter 10 --sgd_ini_resol 35 --sgd_fin_resol 15 --sgd_ini_subset 100 --sgd_fin_subset 500 --sgd  --denovo_3dref --i /home/share/xuhuihuang/three_conformation_image/preprocessed.mrcs --K 1 --sym C1 --flatten_solvent  --zero_mask  --dont_combine_weights_via_disc --pool 3 --pad 2  --particle_diameter 100 --oversampling 1 --healpix_order 1 --offset_range 6 --offset_step 4 --j 1 --gpu --angpix 0.9   #initialize the model
+
+
+mpirun -np 20 relion_refine_mpi --o ./mix_job/Class3D/job002/run --i /home/share/xuhuihuang/three_conformation_image/preprocessed.mrcs --ref ./mix_job/InitialModel/job002/run_it140_class001.mrc --ini_high 50 --dont_combine_weights_via_disc --pool 3 --pad 2  --iter 25 --tau2_fudge 4 --particle_diameter 100 --K 3 --flatten_solvent --zero_mask --oversampling 1 --healpix_order 2 --offset_range 5 --offset_step 2 --sym C1 --norm --scale  --j 1 --gpu  --angpix 0.9  #3D reconsruction
+
+#one can again use the Subset selection to select a subset of the particles assigned to one or more classes. On the I/O tab select the #_model.star file from the last iteration. The resulting display window will show central slices through the 4 refined models. Select the #best classes, and save the corresponding particles using the right-mouse pop-up menu. So you can generate the #./mix_job/Select/particles.star
+
+mpirun -np 20 relion_refine_mpi --o ./mix_job/Refine3D/job01/run --auto_refine --split_random_halves --i ./mix_job/Select/job001/particles.star --ref ./mix_jobClass3D/job001/run_it025_class001.mrc --firstiter_cc --ini_high 30 --dont_combine_weights_via_disc --pool 3 --pad 2  --ctf --particle_diameter 100 --flatten_solvent --zero_mask --oversampling 1 --healpix_order 2 --auto_local_healpix_order 4 --offset_range 5 --offset_step 2 --sym C1 --low_resol_join_halves 40 --norm --scale  --j 1 --gpu "1"   
+###auto refine
+
+
+Note: the details of parameter, please look at tutorial in relion; and we provide: xmipp_image_convert -h; xmipp_volum_from_pdb can help you convert data
