@@ -60,7 +60,7 @@ HKUST method is developed by [Prof. Xuhui Huang's group](http://compbio.ust.hk)
 # Authors
 * **Prof. Xuhui Huang** - *Project leader* - [xuhuihuang](http://compbio.ust.hk/public_html/pmwiki-2.2.8/pmwiki.php?n=People.XuhuiHuang)
 * **Mr. Song Liu** - *Developer* -[liusong299](https://github.com/liusong299/)
-* **Mr. Hanlin Gu** - *Developer* -[ghl1995](https://github.com/ ghl1995/)
+* **Mr. Hanlin Gu** - *Developer* -[ghl1995](https://github.com/ghl1995/)
 
 
 See also the list of [contributors](https://github.com/liusong299/gromacs-2019-CWBSol/graphs/contributors) who participated in this project.
