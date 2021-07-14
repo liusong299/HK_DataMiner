@@ -16,6 +16,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics.pairwise import pairwise_distances_argmin
 from sklearn.utils.validation import check_is_fitted
 from metrics.pairwise import pairwise_distances
+from functools import reduce
 # ===============================================================================
 # LOCAL IMPORTS:
 #import knn as knnn
@@ -33,7 +34,7 @@ def FaissNearestNeighbors(X, eps, min_samples, nlist, nprobe, return_distance=Fa
             flat_config.device = 0
             # make it an IVF GPU index
             index_gpu = faiss.index_cpu_to_gpu(res, 0, index_cpu)
-            assert not index _gpu.is_trained
+            assert not index_gpu.is_trained
             index_gpu.train(X)
             assert index_gpu.is_trained
             # here we specify METRIC_L2, by default it performs inner-product search
@@ -88,10 +89,10 @@ def run_knn(X, n_neighbors=100, n_samples=1000, metric='rmsd', algorithm='vp_tre
     #print "Calculating pairwise ", metric, " distances of ", n_samples, " samples..."
     t0 = time.time()
     if metric is "rmsd":
-        samples = random.sample(X, n_samples)
-        whole_samples= reduce(operator.add, (samples[i] for i in xrange(len(samples))))
+        samples = random.sample(list(X), n_samples)
+        whole_samples= reduce(operator.add, (samples[i] for i in range(len(samples))))
     else:
-        whole_samples = random.sample(X, n_samples)
+        whole_samples = random.sample(list(X), n_samples)
     sample_dist_metric = pairwise_distances( whole_samples, whole_samples, metric=metric )
     t1 = time.time()
     #print "time:", t1-t0,
@@ -129,8 +130,8 @@ def run_knn(X, n_neighbors=100, n_samples=1000, metric='rmsd', algorithm='vp_tre
 
 def calculate_rho(X_len, n_neighbors, dc_2, indices, distances_):
     rho = np.zeros(X_len, dtype=np.float32)
-    for i in xrange(0, X_len):
-        for j in xrange(0,n_neighbors):
+    for i in range(0, X_len):
+        for j in range(0,n_neighbors):
             index = indices[i,j]
             dist = distances_[i,j]
             gaussian = np.math.exp(-(dist**2/dc_2))
@@ -224,8 +225,8 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
 
     # Calculate distance between sample, and find dc
     sample_dist = []
-    for i in xrange(0, n_samples):
-        for j in xrange(i+1, n_samples):
+    for i in range(0, n_samples):
+        for j in range(i+1, n_samples):
             sample_dist.append(sample_dist_metric[i, j])
     sorted_sample_dist=np.sort(sample_dist)
 
@@ -240,16 +241,16 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
 
     if weight is None:
     #Don't have a weight
-        for i in xrange(0, X_len):
-            for j in xrange(0,n_neighbors):
+        for i in range(0, X_len):
+            for j in range(0,n_neighbors):
                 index = indices[i,j]
                 dist = distances_[i,j]
                 gaussian = np.math.exp(-(dist**2/dc_2))
                 rho[i] += gaussian
                 rho[index] += gaussian
     else:
-        for i in xrange(0, X_len):
-            for j in xrange(0,n_neighbors):
+        for i in range(0, X_len):
+            for j in range(0,n_neighbors):
                 index = indices[i,j]
                 dist = distances_[i,j]
                 gaussian = np.math.exp(-(dist**2/dc_2)) * weight[j]
@@ -263,8 +264,8 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
 
     if delta_cutoff == None:
         delta_cutoff = max_dist
-    delta = [max_dist for i in xrange(X_len)]
-    nneigh = [i for i in xrange(X_len)]
+    delta = [max_dist for i in range(X_len)]
+    nneigh = [i for i in range(X_len)]
 
     # Calculating Delta.
     for i in range(0, X_len):
