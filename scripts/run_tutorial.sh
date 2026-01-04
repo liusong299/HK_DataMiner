@@ -24,33 +24,44 @@ cd "${WORK_DIR}"
 
 echo "Running in: $(pwd)"
 
-# Run Clustering
+# Run Clustering via CLI
 echo "----------------------------------------------------------------"
-echo "Running K-Centers Clustering..."
-python "${PROJECT_ROOT}/scripts/test_kcenters.py" \
-    -t trajlist \
-    -a atom_indices \
-    -g native.pdb \
-    -e xtc \
-    -n 100 \
-    -o .
+echo "Running K-Centers Clustering (via hkdm)..."
+# Using absolute path to hkdm if it's not in PATH, or assuming conda env is active
+# Since we are running in a shell that might not have the env activated if called directly,
+# but usually we run this *inside* the env.
+hkdm cluster kcenters \
+    --trajlist trajlist \
+    --atomlist atom_indices \
+    --topology native.pdb \
+    --iext xtc \
+    --n-clusters 100 \
+    --output-dir .
 
-# The output of clustering is assignments_kcenters_n_?.txt
-# We need to find the exact name. It depends on n_microstates found.
-# test_kcenters.py prints "Estimated number of clusters: ..."
-# And saves "assignments_kcenters_n_X.txt"
+# Run APLoD Clustering via CLI (Demonstration)
+echo "----------------------------------------------------------------"
+echo "Running APLoD Clustering (via hkdm)..."
+hkdm cluster aplod \
+    --trajlist trajlist \
+    --atomlist atom_indices \
+    --topology native.pdb \
+    --iext xtc \
+    --rho-cutoff 0.1 \
+    --delta-cutoff 0.1 \
+    --n-neighbors 10 \
+    --output-dir .
 
-# Let's find the assignment file
+# Run Lumping via CLI
+echo "----------------------------------------------------------------"
+echo "Running PCCA Lumping (via hkdm)..."
+# Find assignment file from k-centers
 ASSIGNMENT_FILE=$(ls assignments_kcenters_n_*.txt | head -n 1)
-echo "Found assignment file: ${ASSIGNMENT_FILE}"
+echo "Using assignment file: ${ASSIGNMENT_FILE}"
 
-# Run Lumping
-echo "----------------------------------------------------------------"
-echo "Running PCCA Lumping..."
-python "${PROJECT_ROOT}/scripts/doLumping.py" \
-    -c "${ASSIGNMENT_FILE}" \
-    -m 4 \
-    -l traj_len.txt
+hkdm lump pcca \
+    --assignments "${ASSIGNMENT_FILE}" \
+    --n-macro 4 \
+    --homedir .
 
 echo "----------------------------------------------------------------"
 echo "Tutorial run completed successfully."
