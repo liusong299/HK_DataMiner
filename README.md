@@ -3,7 +3,9 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
 
-**HKDataMiner** is a python library for constructing statistical models for biomolecular dynamics data. It is developed by **Prof. Xuhui Huang's Group** at HKUST.
+**HKDataMiner** is a python library for constructing statistical models for biomolecular dynamics data. It was originally developed by **Prof. Xuhui Huang's Group** at HKUST.
+
+> **Note:** Prof. Xuhui Huang has moved to the **University of Wisconsin–Madison**. You can visit his [current lab website here](https://huang.chem.wisc.edu/xuhui-huang/).
 
 ## Project History & Modernization
 
@@ -133,5 +135,6 @@ This project is licensed under the **Apache 2.0 License**. See the [LICENSE](LIC
 
 ## Authors
 
-*   **Prof. Xuhui Huang** - *Project Leader*
-*   **Dr. Song Liu** - *Developer*
+*   **Prof. Xuhui Huang** - *Project Leader* - [University of Wisconsin–Madison](https://huang.chem.wisc.edu/xuhui-huang/) (Previously HKUST)
+*   **Dr. Song Liu** - *Developer* - [song.liu@connect.ust.hk](mailto:song.liu@connect.ust.hk)
+*   **Mr. Hanlin Gu** - *Developer*
