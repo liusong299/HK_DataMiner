@@ -3,90 +3,74 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
 
-**HKDataMiner** is a comprehensive Python library designed for the statistical analysis of biomolecular dynamics simulations. It provides a suite of algorithms for clustering conformational states and constructing Markov State Models (MSMs) to elucidate the kinetic properties of molecular systems.
+**HKDataMiner** is a python library for constructing statistical models for biomolecular dynamics data. It is developed by **Prof. Xuhui Huang's Group** at HKUST.
 
-Developed by **Prof. Xuhui Huang's Group** at HKUST.
+The core highlight of this package is **APLoD** (Adaptive Partitioning by Local Density-peaks), a highly efficient clustering algorithm designed specifically for analyzing large-scale Molecular Dynamics (MD) trajectories and constructing Markov State Models (MSMs).
 
-## Key Features
+## Why APLoD?
 
-HKDataMiner integrates advanced data mining techniques tailored for Molecular Dynamics (MD) trajectories:
+**Adaptive Partitioning by Local Density-peaks (APLoD)** addresses the challenge of clustering ultra-large MD datasets containing millions of conformations.
 
-### 1. Clustering Algorithms (Microstates)
-*   **K-Centers**: A geometric clustering algorithm that minimizes the maximum radius of clusters. Effective for ensuring full coverage of the conformational space.
-*   **APLoD (Adaptive Partitioning by Local Density-peaks)**: An efficient, density-based clustering algorithm. APLoD estimates the local density of MD conformations using k-nearest neighbors and groups high-density regions into clusters. It features **adaptive resolution**: generating larger clusters in low-density regions and finer clusters in high-density regions, significantly reducing computational cost and memory usage compared to traditional methods.
+### Key Advantages:
+1.  **Extreme Efficiency**: APLoD reduces running time and memory usage by **2–3 orders of magnitude** compared to standard Density Peaks (DP) algorithms. It achieves a temporal complexity of $O(N \log N)$ and spatial complexity of $O(N)$, making it feasible to run on standard desktops even for massive datasets.
+2.  **Adaptive Resolution**: Unlike geometric clustering (e.g., K-Centers) which tends to partition space uniformly, APLoD is density-based. It produces **clusters with adaptive sizes**:
+    *   **High-density regions** (energy minima): Finer resolution with smaller clusters.
+    *   **Low-density regions** (transition states): Coarser resolution with larger clusters.
+    *   This automatically minimizes statistical error within clusters, preserving kinetic boundaries.
+3.  **Local Density Estimation**: By utilizing **k-Nearest-Neighbors (kNN)** search (via VP-trees), APLoD estimates density locally. This avoids the quadratic $O(N^2)$ cost of global density estimation found in traditional methods.
 
-### 2. Lumping Algorithms (Macrostates)
-*   **PCCA (Perron Cluster Cluster Analysis)**: Uses the eigenspectrum of the transition probability matrix to aggregate microstates into kinetically metastable macrostates.
-*   **PCCA+**: An improved version of PCCA with better fuzzy membership handling.
-*   **Spectral Clustering**: Graph-based clustering on the transition matrix.
-*   **Ward**: Hierarchical clustering minimizing variance.
+## Features
+
+### 1. Clustering Algorithms (Microstate Identification)
+*   **APLoD (Recommended)**: Best for large-scale datasets. Groups conformations based on local density peaks.
+*   **K-Centers**: Standard geometric clustering minimizing the maximum cluster radius. Useful for ensuring uniform coverage of conformational space.
+
+### 2. Lumping Algorithms (Macrostate Construction)
+Once microstates are identified, HKDataMiner provides algorithms to lump them into kinetically metastable macrostates:
+*   **PCCA (Perron Cluster Cluster Analysis)**: Spectral method based on the transition probability matrix eigenvalues.
+*   **PCCA+**: Robust extension of PCCA with fuzzy memberships.
+*   **Spectral Clustering**: Graph-based clustering.
+*   **Ward**: Hierarchical clustering.
 
 ### 3. Template Matching
-A specialized module for analyzing cryo-EM data distributions using template matching techniques (requires Xmipp).
+A specialized module for cryo-EM data distribution analysis (requires Xmipp).
 
 ## Installation
 
-We recommend using `mamba` (or `conda`) to manage the scientific Python stack.
+We recommend using `mamba` (or `conda`) to manage the environment.
 
-### Prerequisites
-*   Linux or macOS
-*   Python 3.10+
-*   Mamba/Conda
+```bash
+# 1. Clone the repository
+git clone https://github.com/liusong299/HK_DataMiner.git
+cd HK_DataMiner
 
-### Steps
+# 2. Create the environment (Python 3.10)
+mamba env create -f environment.yml
+mamba activate hkdataminer-py310
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/liusong299/HK_DataMiner.git
-    cd HK_DataMiner
-    ```
+# 3. Install in editable mode
+pip install -e .
+```
 
-2.  **Create and activate the environment:**
-    ```bash
-    mamba env create -f environment.yml
-    mamba activate hkdataminer-py310
-    ```
+## Quick Start
 
-3.  **Install the package:**
-    ```bash
-    pip install -e .
-    ```
+We provide a one-line command to run a full tutorial on the **Alanine Dipeptide** dataset. This workflow unpacks data, performs clustering, builds an MSM via lumping, and plots the results.
 
-## Quick Start: Alanine Dipeptide Tutorial
-
-We provide a one-line command to run a full end-to-end analysis on the Alanine Dipeptide dataset. This workflow includes:
-1.  Unpacking tutorial data.
-2.  **Clustering** trajectory frames into microstates (using K-Centers or APLoD).
-3.  **Lumping** microstates into macrostates using PCCA.
-4.  Visualizing the results.
-
-**Run the tutorial:**
 ```bash
 hkdm tutorial
 ```
 
-**Output:**
-Results are saved in `_tutorial_run/Tutorial/`. Key files include:
-*   `kcenters_n_100.png`: Microstate distribution on the Ramachandran plot.
-*   `PCCA_100_to_4_states_Matrix.png`: Transition probability matrix.
-*   `assignments_*.txt`: Frame-to-state assignments.
+**Results** will be saved in `_tutorial_run/Tutorial/`, including:
+*   `assignments_*.txt`: Microstate assignments for every frame.
+*   `cluster_centers.pdb`: Structures of cluster centers.
+*   `PCCA_*_Matrix.png`: Transition probability matrix of the macrostates.
+*   `*_Metastability_Modularity.txt`: MSM quality metrics.
 
-## Usage Guide
+## CLI Usage
 
-HKDataMiner provides a unified CLI tool `hkdm`.
+HKDataMiner provides a unified command-line interface `hkdm`.
 
-### 1. Clustering with K-Centers
-```bash
-hkdm cluster kcenters \
-    --trajlist trajlist.txt \
-    --atomlist atom_indices.txt \
-    --topology native.pdb \
-    --n-clusters 100 \
-    --output-dir ./results
-```
-
-### 2. Clustering with APLoD
-APLoD is recommended for large datasets.
+### Clustering with APLoD (Recommended)
 ```bash
 hkdm cluster aplod \
     --trajlist trajlist.txt \
@@ -98,7 +82,17 @@ hkdm cluster aplod \
     --output-dir ./results
 ```
 
-### 3. Lumping (MSM Construction)
+### Clustering with K-Centers
+```bash
+hkdm cluster kcenters \
+    --trajlist trajlist.txt \
+    --atomlist atom_indices.txt \
+    --topology native.pdb \
+    --n-clusters 100 \
+    --output-dir ./results
+```
+
+### Lumping (MSM Construction)
 ```bash
 hkdm lump pcca \
     --assignments ./results/assignments_kcenters_n_100.txt \
@@ -107,15 +101,22 @@ hkdm lump pcca \
     --homedir ./results
 ```
 
-## References
+## Citation
 
-If you use **APLoD** in your research, please cite:
+If you use **APLoD** or **HKDataMiner** in your research, please cite:
 
-> Song Liu, Lizhe Zhu and Xuhui Huang, "Adaptive Partitioning by Local Density-peaks (APLoD): An efficient density-based clustering algorithm for analyzing molecular dynamics trajectories". *Journal of Computational Chemistry*, 2016.
-
-For **HKDataMiner** general usage:
-
-> HKUST Huang Group (http://compbio.ust.hk)
+```bibtex
+@article{liu2017adaptive,
+  title={Adaptive partitioning by local density-peaks: An efficient density-based clustering algorithm for analyzing molecular dynamics trajectories},
+  author={Liu, Song and Zhu, Lizhe and Sheong, Fu Kit and Wang, Wei and Huang, Xuhui},
+  journal={Journal of Computational Chemistry},
+  volume={38},
+  number={3},
+  pages={152--160},
+  year={2017},
+  publisher={Wiley Online Library}
+}
+```
 
 ## License
 
