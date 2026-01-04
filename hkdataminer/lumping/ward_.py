@@ -7,10 +7,8 @@ from sklearn import cluster
 from sklearn.neighbors import kneighbors_graph
 # ===============================================================================
 # LOCAL IMPORTS:
-HK_DataMiner_Path = os.path.relpath(os.pardir)
-sys.path.append(HK_DataMiner_Path)
-from msm.msm import MarkovStateModel
-from lumper_ import *
+from hkdataminer.msm import MarkovStateModel
+from .lumper_ import *
 # ===============================================================================
 class Ward(MarkovStateModel):
     def __init__(self, n_macro_states=None, lag_time=1, homedir=None, traj_len=None):
@@ -28,26 +26,26 @@ class Ward(MarkovStateModel):
         super(Ward, self).fit(assignments)
         self.run()
         t1=time.time()
-        print "Ward Lumping running time:", t1-t0
+        print("Ward Lumping running time:", t1-t0)
         return self.MacroAssignments_
 
     def run(self):
         '''
         Do Ward Lumping.
         '''
-        print "Doing Ward Lumping..."
+        print("Doing Ward Lumping...")
 
         t0 = time.time()
 
         connectivity = kneighbors_graph(self.tProb_, n_neighbors=self.n_neighbors)
         # make connectivity symmetric
         #connectivity = 0.5 * (connectivity + connectivity.T)
-        #print "Connectivity=", connectivity, "N_Neighbors=", self.n_fneighbors
+        #print("Connectivity=", connectivity, "N_Neighbors="), self.n_fneighbors
         ward = cluster.AgglomerativeClustering(n_clusters=self.n_macro_states, linkage='ward', connectivity=connectivity)
         ward.fit(self.tProb_)
         t1 = time.time()
-        print "Time:", t1-t0
-        # print "Ward Results:"
+        print("Time:", t1-t0)
+        # print("Ward Results:")
         self.microstate_mapping_ = ward.labels_
 
         self.MacroAssignments_ = get_MacroAssignments(assignments=self.assignments,

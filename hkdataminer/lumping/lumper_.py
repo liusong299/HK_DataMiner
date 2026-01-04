@@ -2,8 +2,9 @@ __author__ = 'stephen'
 import scipy.io
 import scipy.sparse
 import numpy as np
-from msm import MarkovStateModel
-from utils import plot_matrix
+from hkdataminer.msm import MarkovStateModel
+from ..utils import plot_matrix
+
 def get_MacroAssignments(assignments=None, microstate_mapping=None, outlier=-1):
     '''
 
@@ -45,7 +46,7 @@ def OutputResult(homedir='.', tCount_=None, tProb_=None, microstate_mapping_=Non
     if MacroAssignments_ is not None:
         np.savetxt(MacroAssignDir, MacroAssignments_, fmt="%d")
     #Evaluate lumping results
-    Evaluate_Result(homedir='.', tProb_=tProb_, lag_time=1, microstate_mapping_=microstate_mapping_, MacroAssignments_=MacroAssignments_, name=name)
+    Evaluate_Result(homedir=homedir, tProb_=tProb_, lag_time=1, microstate_mapping_=microstate_mapping_, MacroAssignments_=MacroAssignments_, name=name)
 
 
 def Evaluate_Result(homedir='.', tProb_=None, lag_time=1, microstate_mapping_=None, MacroAssignments_=None, name=None):
@@ -57,10 +58,10 @@ def Evaluate_Result(homedir='.', tProb_=None, lag_time=1, microstate_mapping_=No
     #plot_matrix(labels=None, tProb_=tProb_, name=name)
 
     #Calculate metastablilty
-    print "Calculating Metastablilty and Modularity..."
+    print("Calculating Metastablilty and Modularity...")
     metastability = Macro_tProb_.diagonal().sum()
-    metastability /= len(Macro_tProb_)
-    print "Metastability:", metastability
+    metastability /= Macro_tProb_.shape[0]
+    print("Metastability:", metastability)
 
     #Calculate modularity
     micro_tProb_ = tProb_
@@ -69,14 +70,16 @@ def Evaluate_Result(homedir='.', tProb_=None, lag_time=1, microstate_mapping_=No
 
     modularity = 0.0
     len_mapping = len(microstate_mapping_)
-    for i in xrange(len_mapping):
+    for i in range(len_mapping):
         state_i = microstate_mapping_[i]
-        for j in xrange(len_mapping):
+        for j in range(len_mapping):
             state_j = microstate_mapping_[j]
             if state_i == state_j:
                 modularity += micro_tProb_[i, j] - degree[i]*degree[j]/total_degree
     modularity /= total_degree
-    print "Modularity:", modularity
+    if hasattr(modularity, 'item'):
+        modularity = modularity.item()
+    print("Modularity:", modularity)
 
     Macro_tCountDir       = homedir + "/" + name + "Macro_tCounts.mtx"
     Macro_tProbDir        = homedir + "/" + name + "Macro_tProb.mtx"

@@ -1,74 +1,101 @@
-# HKDataminer Tutorial - Data Mining Tool for Biomolecular Dynamics
-**Version 0.9.1, (c) Song LIU**
-## Overview
-HK Dataminer is a python library for constructing statistical models for bimolecular dynamics data. The package includes complementary data mining algorithms such as clustering and Markov state models (MSMs).
+# HKDataMiner
 
-# Installation guide
-## I. Package requirement
-* [Python v3.7](https://www.python.org)
-* [NumPy v1.1.8](https://numpy.org)
-* [SciPy v1.17.0](https://www.scipy.org)
-* [MDTraj 1.9.3](mdtraj.org)
-* [Scikit-Learn v0.21.3](https://scikit-learn.org)
-* [Matplotlib](https://matplotlib.org)
-* [Xmipp](http://xmipp.i2pc.es/)
-## II.Installing
-We highly recommend that you download the Python 3.7 version of Anaconda, which is a completely free enterprise-ready Python distribution for large-scale data processing, predictive analytics, and scientific computing.
+**HKDataMiner** is a Python library for constructing statistical models from biomolecular dynamics data. It provides algorithms for clustering conformational states and building Markov State Models (MSMs) via lumping techniques.
 
-# A step-by-step guide of running HKDataminer
-## 1.Introduction and Alanine Dipeptide
+This repository has been modernized to support **Python 3.10+** and includes a CLI and reproducible tutorial.
 
-## 2.Move to tutorial directory Assuming you’ve in the MD Data Miner folder, move to the Tutorial directory.
-`cd Tutorial`
+## Quickstart
 
-## 3.Cluster your data The following command clusters your data using the RMSD metric by k-centers clustering method.
-`python ../scripts/test_kcenters.py  -n 500`
+### 1. Installation
 
-After Clustering, the assignments of each conformation are stored as assignments.txt, the cluster centers are sotred as generators.txt.
+We recommend using `mamba` (or `conda`) to manage dependencies.
 
-## 4.Lump microstates into macrostates
-Once we have determined the number of macrostates in the system, we will use Perron Cluster CLuster Analysis (PCCA) algorithm to lump microstates into macrostates. We use the doLumping.py script to lump the microstates into macrostates. We could define the number of macrostates using -n option.The command below will build 4 macrostates.
+```bash
+# Clone the repository
+git clone https://github.com/liusong299/HK_DataMiner.git
+cd HK_DataMiner
 
-`python ../scripts/doLumping.py -c assignments_kcenters_n_500.txt -m 6`
+# Create the environment
+mamba env create -f environment.yml
 
-Examining the macrostate decomposition It is known that the relevant degrees of freedom for alanine dipeptide are the phi and psi backbone angles. Let’s compute the dihedrals and plot the conformations of each macrostate.
+# Activate the environment
+mamba activate hkdataminer-py310
 
-## 5.Template matching to obtain popuplations in multiplr conformtions of cryo-EM dataset
-Template matching project: aimed to use the templates to match the multiple structures (conformations) so that obtain the equilibrium distributions 
-in different conformations.
-There are three steps: 1. select the best viewing angle which can distinguish the multiple conformations well. 2. project the 3D volumes into 2D 
-images for both templates and experimental volumes. 3. two-stage matching to obtain the populations of multiple conformations.
+# Install the package in editable mode
+pip install -e .
+```
 
-requirements: python, linux system and xmipp
+### 2. Run the Tutorial (One Command)
 
-Dataset: Each dataset is consisted of template structures and experimental structures. We use two expmples to test our algorithm, one is 
-simulation dataset, the other is real dataset. We provide simualtion dataset: open.vol, close.vol, intermediate.vol(same as test data and templates) 
-and real dataset:6P1K.vol(test data), H_EV2_red.vol, H_EV2_grey.vol, H_EV2_blue.vol(templates)
+To run the end-to-end tutorial (Alanine Dipeptide):
 
-Preprocess: you can use command: 
-`xmipp_xmipp_volume_from_pdb -i open.pdb -o open.vol`     transfer pdb file to vol file
+```bash
+hkdm tutorial
+```
 
-`xmipp_image_convert -i open.vol -o open.mrc`            transfer vol file to mrc file
+This command will:
+1.  Unpack the included tutorial data (`Tutorial.tar.gz`).
+2.  Run K-Centers clustering on the trajectory data.
+3.  Run PCCA lumping to identify macrostates.
+4.  Generate plots and assignment files in `_tutorial_run/Tutorial`.
 
-run our algorithm: `python TSTM.py --datatype='sim' --vol_size=128`, the output is '2nd_stage_brute_force_classification_result.dat' 
+## Tutorial Walkthrough
 
-and `python ./two_stage_matching/analyze_population.py` to obatin population
+The tutorial analyzes Alanine Dipeptide dynamics. The raw data includes trajectory files (`.xtc`) and topology (`native.pdb`).
 
-# Deployment
-HKUST method is developed by [Prof. Xuhui Huang's group](http://compbio.ust.hk)
+### Step 1: Clustering (Microstates)
 
-# Authors
-* **Prof. Xuhui Huang** - *Project leader* - [xuhuihuang](http://compbio.ust.hk/public_html/pmwiki-2.2.8/pmwiki.php?n=People.XuhuiHuang)
-* **Mr. Song Liu** - *Developer* -[liusong299](https://github.com/liusong299/)
-* **Mr. Hanlin Gu** - *Developer* -[ghl1995](https://github.com/ghl1995/)
+The first step clusters the conformations into microstates using the K-Centers algorithm based on RMSD.
 
+**CLI Command:**
+```bash
+hkdm cluster kcenters --n-clusters 100
+```
 
-See also the list of [contributors](https://github.com/liusong299/gromacs-2019-CWBSol/graphs/contributors) who participated in this project.
+**Key Outputs:**
+*   `assignments_kcenters_n_100.txt`: Cluster assignment for each frame.
+*   `cluster_centers.pdb`: PDB file containing the center conformation of each cluster.
+*   `kcenters_n_100.png`: Plot of microstates on the Phi-Psi landscape.
 
-# License
-This project is licensed under the GPL License - see the [LICENSE](LICENSE) file for details
+### Step 2: Lumping (Macrostates)
 
-# Acknowledgments
+The second step lumps microstates into kinetically metastable macrostates using PCCA.
 
-# References:
+**CLI Command:**
+```bash
+hkdm lump pcca --assignments assignments_kcenters_n_100.txt --n-macro 4
+```
 
+**Key Outputs:**
+*   `PCCA_100_to_4_states_MacroAssignments.txt`: Macrostate assignment for each frame.
+*   `PCCA_100_to_4_states_Matrix.png`: Transition probability matrix plot.
+*   `PCCA_100_to_4_states_Metastability_Modularity.txt`: Quality metrics.
+
+### Step 3: Visualization
+
+You can view the generated `.png` files to see the energy landscape and cluster distributions. A Jupyter Notebook is also provided in `notebooks/AlanineDipeptide_Tutorial.ipynb`.
+
+## Troubleshooting
+
+*   **Missing Dependencies:** Ensure you have activated the conda environment (`mamba activate hkdataminer-py310`).
+*   **Compilation Errors:** If `pip install -e .` fails, ensure you have a C compiler installed (usually present in standard Linux/macOS environments).
+*   **Import Errors:** If you see `ModuleNotFoundError`, try reinstalling the package: `pip install -e .`.
+
+## Optional: Cryo-EM Template Matching
+
+The repository contains a `template_matching` module for analyzing cryo-EM data. This requires **Xmipp** and is currently optional.
+
+To run the template matching workflow (Linux + Xmipp required):
+1.  Navigate to `template_matching/`.
+2.  Follow instructions in the original documentation or scripts.
+3.  Run `python TSTM.py ...` (Note: This part has not been fully modernized for Python 3.10 and may require adjustments).
+
+## License
+
+This project is licensed under the Apache-2.0 License. See the [LICENSE](LICENSE) file for details.
+
+## Authors
+
+*   **Prof. Xuhui Huang** - *Project Leader*
+*   **Mr. Song Liu** - *Developer*
+*   **Mr. Hanlin Gu** - *Developer*

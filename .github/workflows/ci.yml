@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master", "modernize-py310" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Mamba
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: hkdataminer-py310
+        environment-file: environment.yml
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+
+    - name: Install dependencies
+      run: |
+        pip install -e .
+
+    - name: Run Tests
+      run: |
+        pytest tests/
+
+    - name: Run Tutorial Smoke Test
+      run: |
+        hkdm tutorial --help
+        # We can try running the actual tutorial but it takes time.
+        # Just checking if the script starts is good enough for CI usually, 
+        # unless we want full integration test.
+        # Let's run a very small clustering if possible via direct python call in pytest?
+        # But we don't have small test data easily accessible without unpacking.

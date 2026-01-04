@@ -7,12 +7,10 @@ import scipy.sparse.linalg
 import numpy as np
 # ===============================================================================
 # LOCAL IMPORTS:
-HK_DataMiner_Path = os.path.relpath(os.pardir)
-sys.path.append(HK_DataMiner_Path)
-from msm.msm import MarkovStateModel
-from cluster import k_centers
-from lumper_ import *
-from lumping import PCCA
+from hkdataminer.msm import MarkovStateModel
+from hkdataminer.cluster import k_centers
+from .lumper_ import *
+from .pcca_ import PCCA
 # ===============================================================================
 
 class APM(MarkovStateModel):
@@ -58,17 +56,17 @@ class APM(MarkovStateModel):
         t0 = time.time()
         self.X=X
         self.run()
-        print "APM clustering Time Cost:", t1 - t0
+        print("APM clustering Time Cost:", t1 - t0)
         return self
 
     def run(self):
         """Do the APM lumping.
         """
-        print "Doing APM Clustering..."
+        print("Doing APM Clustering...")
         #Start looping for maxIter times
         n_macro_states = 1  #initialized as 1 because no macrostate exist in loop 0
-        for iter in xrange(self.max_iter):
-            #for k in xrange(n_macro_states):
+        for iter in range(self.max_iter):
+            #for k in range(n_macro_states):
                 #TODO
             self.do_split()
                 # set n_macro_states
@@ -79,13 +77,13 @@ class APM(MarkovStateModel):
             macro_lumper.fit(self.labels_)
             self.MacroAssignments_ = macro_lumper.MacroAssignments_
     
-            print "Loop:", iter, "Metastability:", macro_lumper.metastability
+            print("Loop:", iter, "Metastability:", macro_lumper.metastability)
 
         OutputResult(homedir=self.homedir, tCount_=self.tCount_, tProb_=self.tProb_,
                      microstate_mapping_=self.microstate_mapping_, MacroAssignments_=self.MacroAssignments_, name=name)
 
     def do_time_clustering(self):
-        print "Stack:", self.micro_stack
+        print("Stack:", self.micro_stack)
         if not self.micro_stack:
             return
         else:
@@ -104,7 +102,7 @@ class APM(MarkovStateModel):
         X_len = len(self.X)
         count_trans = 0
         count_relax = 0
-        for i in xrange(X_len):
+        for i in range(X_len):
             #if it starts at the desired state and ends at the same trajectory, count as one transition
             if self.labels_[i] == micro_state and self.MacroAssignments_[i] == macro_state:  #and self.labels_[i] ==self.labels_[i+self.lag_time]:
                 count_trans += 1
@@ -118,7 +116,9 @@ class APM(MarkovStateModel):
             else:
                 return 1.0
             
-    def do_split(self, micro_state = None, sub_clus=self.sub_clus):
+    def do_split(self, micro_state = None, sub_clus=None):
+        if sub_clus is None:
+            sub_clus = self.sub_clus
         Micro_clusterer = KCenters(n_clusters=sub_clus, metric="rmsd", random_state=0)
         if micro_state is not None:
             sub_data_index = self.labels_.index(micro_state)
@@ -132,16 +132,16 @@ class APM(MarkovStateModel):
             max_state = max(self.labels_)
 
             #add new cluster in to micro_stack
-            for i in xrange(max_state+1, max_state+sub_clus):
+            for i in range(max_state+1, max_state+sub_clus):
                 self.micro_stack.append(i)
             #rename the cluster number
-            for i in xrange(len(sub_labels)):
-                if sub_labels[i] is 0:
+            for i in range(len(sub_labels)):
+                if sub_labels[i] == 0:
                     sub_labels[i] = micro_state
                 else:
                     sub_data[i] += max_state
             #map new cluster back to micro assignment
-            for i in xrange(len(sub_data)):
+            for i in range(len(sub_data)):
                 self.labels_[ sub_data_index[i] ] = sub_labels[i]
         else:
            Micro_clusterer.fit(self.X)

@@ -1,0 +1,22 @@
+name: hkdataminer-py310
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - pandas
+  - mdtraj
+  - jupyterlab
+  - rich
+  - tqdm
+  - pytest
+  - typer
+  - numba
+  - faiss-cpu
+  - pip
+  - pip:
+    - -e .

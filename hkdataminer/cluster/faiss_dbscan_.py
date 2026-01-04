@@ -13,7 +13,7 @@ DBSCAN: Density-Based Spatial Clustering of Applications with Noise
 import numpy as np
 import time
 from scipy import sparse
-from numba import autojit
+from numba import jit
 import numba
 
 from sklearn.base import BaseEstimator, ClusterMixin
@@ -23,7 +23,7 @@ from sklearn.utils import check_array, check_consistent_length
 from sklearn.cluster._dbscan_inner import dbscan_inner
 import faiss
 
-@autojit
+@jit
 def get_neighborhoods(D, I, eps):
     neighborhoods = []
     for i in range(len(D)):

@@ -10,7 +10,7 @@ import matplotlib.pylab as pylab
 from .utils import get_subindices
 import matplotlib.ticker as mtick
 from collections import Counter
-from sklearn.neighbors.kde import KernelDensity
+from sklearn.neighbors import KernelDensity
 from scipy import stats
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 def plot_cluster(labels, phi_angles, psi_angles, name, outliers=-1, step=1, potential=False):
@@ -165,17 +165,17 @@ def plot_matrix(tProb_=None, name=None):
         print "size of tProb", tProb_.shape
         if scipy.sparse.issparse(tProb_):
             tProb_ = tProb_.todense()
-        for i in xrange(length):
-            for j in xrange(length):
+        for i in range(length):
+            for j in range(length):
                 Cmn[labels[i], labels[j]] += tProb_[i, j]
 
-        #for i in xrange(n_states):
+        #for i in range(n_states):
             #Cmn[i,i] += diagC[i]
-        #    for j in xrange(n_states):
+        #    for j in range(n_states):
         #        Cmn[i, j] += Cmn[j, i]
         #        Cmn[j, i] = Cmn[i, j]
 
-        for j in xrange(n_states):
+        for j in range(n_states):
             sum_row = np.sum(Cmn[j,:])
             if sum_row is not 0:
                 Cmn[j,:] /= sum_row
@@ -183,6 +183,8 @@ def plot_matrix(tProb_=None, name=None):
         pylab.matshow(Cmn, cmap=plt.cm.OrRd)
     else:
     '''
+    if scipy.sparse.issparse(tProb_):
+        tProb_ = tProb_.todense()
     pylab.matshow(tProb_, cmap=plt.cm.OrRd)
     plt.colorbar()
     #pylab.show()
@@ -214,7 +216,7 @@ def plot_cluster_size_distribution(populations, name='Populations'):
     distrib.grid(True)
     X = range(len(populations))
     X_xtick = ['']
-    for i in xrange(1, len(populations)+1):
+    for i in range(1, len(populations)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
     print(X_xtick)
@@ -241,7 +243,7 @@ def plot_compare_cluster_size_distribution(populations_1, populations_2, name='P
     distrib.grid(True)
     X = np.arange(len(populations_1))
     X_xtick = ['']
-    for i in xrange(1, len(populations_1)+1):
+    for i in range(1, len(populations_1)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
     print(X_xtick)
@@ -253,7 +255,7 @@ def plot_compare_cluster_size_distribution(populations_1, populations_2, name='P
     #  populations_2
     #X = range(len(populations_2))
     X_xtick = ['']
-    for i in xrange(1, len(populations_2)+1):
+    for i in range(1, len(populations_2)+1):
         xx = '$10^' + str(i) + '$'
         X_xtick.append(xx)
     print(X_xtick)
@@ -372,7 +374,7 @@ def plot_compare_distribution(labels_1=None, labels_2=None, phi_angles=None, psi
     #    plt.plot(phi_ctr_1, psi_ctr_1, '*', markersize=8, color='r')
 
     distribution_1 = np.array([0,0,0,0,0,0,0,0,0,0], dtype=np.float64)
-    for i in xrange(0, len(phi_ctr_1)):
+    for i in range(0, len(phi_ctr_1)):
         if psi_ctr_1[i] > 179.0:
             index_x = np.where(xedges > 179.0)[0][0] - 1
         else:
@@ -388,7 +390,7 @@ def plot_compare_distribution(labels_1=None, labels_2=None, phi_angles=None, psi
     print(distribution_1)
 
     distribution_2 = np.array([0,0,0,0,0,0,0,0,0,0], dtype=np.float64)
-    for i in xrange(0, len(phi_ctr_2)):
+    for i in range(0, len(phi_ctr_2)):
         if psi_ctr_2[i] > 179.0:
             index_x = np.where(xedges > 179.0)[0][0] - 1
         else:
@@ -485,7 +487,7 @@ def plot_landscape_barrier(labels=None, selected=1, phi_angles=None, psi_angles=
     distribution = np.array([0,0,0,0,0,0,0,0,0,0], dtype=np.float64)
     #print "len phi_ctr", len(phi_ctr)
     #print "shape of xedges", xedges.shape
-    for i in xrange(0, len(phi_ctr)):
+    for i in range(0, len(phi_ctr)):
         if psi_ctr[i] > 179.0:
             index_x = np.where(xedges > 179.0)[0][0] - 1
         else:
@@ -535,7 +537,7 @@ def calculate_population(labels, name='Populations'):
     #print magnitude populations
     print("Populations Probability:")
     #bins = [0]
-    for i in xrange(len(populations)):
+    for i in range(len(populations)):
         populations[i] = populations[i] / total_states
         print("10 ^", i, "to", "10 ^", i+1,":", populations[i]*100, "%")
         #bins.append(10**(i+1))
@@ -561,7 +563,7 @@ def compare_population(labels_1, labels_2, name='Compare_Populations'):
             populations_1[magnitude] += 1
 
     print("Populations Probability:")
-    for i in xrange(len(populations_1)):
+    for i in range(len(populations_1)):
         populations_1[i] = populations_1[i] / total_states
         print("10 ^", i, "to", "10 ^", i+1,":", populations_1[i]*100, "%")
 
@@ -580,7 +582,7 @@ def compare_population(labels_1, labels_2, name='Compare_Populations'):
             populations_2[magnitude] += 1
 
     print("Populations Probability:")
-    for i in xrange(len(populations_2)):
+    for i in range(len(populations_2)):
         populations_2[i] = populations_2[i] / total_states
         print("10 ^", i, "to", "10 ^", i+1,":", populations_2[i]*100, "%")
 

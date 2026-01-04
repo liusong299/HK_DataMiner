@@ -9,9 +9,7 @@ from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.utils import check_array, check_random_state
 #===============================================================================
 # LOCAL IMPORTS:
-HK_DataMiner_Path = os.path.relpath(os.pardir)
-sys.path.append(HK_DataMiner_Path)
-from metrics.pairwise import pairwise_distances
+from ..metrics.pairwise import pairwise_distances
 #===============================================================================
 
 def k_centers(X, n_clusters=8, metric='rmsd', random_state=None):
@@ -50,7 +48,7 @@ def k_centers(X, n_clusters=8, metric='rmsd', random_state=None):
         The label of each point is an integer in [0, n_clusters).
     """
     n_samples = len(X)
-    if random_state is -1:
+    if random_state == -1:
         seed = check_random_state(None).randint(0, n_samples)
     else:
         seed = random_state

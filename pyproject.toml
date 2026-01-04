@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "versioneer"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hkdataminer"
+version = "0.9.1"
+description = "Data Mining Tool for Biomolecular Dynamics"
+authors = [
+    {name = "Song Liu", email = "liusong299@gmail.com"}
+]
+license = {text = "Apache-2.0"}
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "matplotlib",
+    "mdtraj",
+    "typer",
+    "rich",
+    "tqdm",
+    "numba",
+    "faiss-cpu"
+]
+requires-python = ">=3.10"
+
+[project.scripts]
+hkdm = "hkdataminer.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hkdataminer*"]
