@@ -33,6 +33,33 @@ def kcenters(
         output_dir=output_dir
     )
 
+@cluster_app.command("aplod")
+def aplod(
+    trajlist: str = typer.Option("trajlist", help="List of trajectory files"),
+    atomlist: str = typer.Option("atom_indices", help="List of atom index files"),
+    topology: str = typer.Option("native.pdb", help="Topology file"),
+    homedir: str = typer.Option(".", help="Home directory"),
+    iext: str = typer.Option("xtc", help="Input extension"),
+    rho_cutoff: float = typer.Option(1.0, help="Rho cutoff"),
+    delta_cutoff: float = typer.Option(1.0, help="Delta cutoff"),
+    n_neighbors: int = typer.Option(100, help="Number of neighbors"),
+    stride: int = typer.Option(None, help="Stride"),
+    output_dir: str = typer.Option(".", help="Output directory"),
+):
+    """Run APLoD clustering (on Phi/Psi angles)."""
+    workflows.run_aplod(
+        trajListFns=trajlist,
+        atomListFns=atomlist,
+        topology=topology,
+        homedir=homedir,
+        iext=iext,
+        rho_cutoff=rho_cutoff,
+        delta_cutoff=delta_cutoff,
+        n_neighbors=n_neighbors,
+        stride=stride,
+        output_dir=output_dir
+    )
+
 @lump_app.command("pcca")
 def pcca(
     assignments: str = typer.Option(..., help="Assignments file"),

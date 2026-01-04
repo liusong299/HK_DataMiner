@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from hkdataminer.cluster import KCenters
+from hkdataminer.cluster import KCenters, APLoD
 from hkdataminer.lumping import PCCA
 from hkdataminer.utils import XTCReader, plot_cluster, utils
 
@@ -20,19 +20,6 @@ def run_clustering(
     phi_file = os.path.join(output_dir, "phi_angles.txt")
     psi_file = os.path.join(output_dir, "psi_angles.txt")
     traj_len_file = os.path.join(output_dir, "traj_len.txt")
-    
-    if os.path.isfile(phi_file) and os.path.isfile(psi_file):
-        print("Loading existing phi/psi angles...")
-        phi_angles = np.loadtxt(phi_file, dtype=np.float32)
-        psi_angles = np.loadtxt(psi_file, dtype=np.float32)
-        
-        # We still need traj_len if not present?
-        # Ideally we should read trajs to get traj_len if needed, but lets assume if phi/psi exists, traj_len exists?
-        # But we need 'trajs' object for clustering with 'rmsd' metric?
-        # Wait, KCenters with 'rmsd' metric REQUIRES trajs object (md.Trajectory).
-        # So caching phi/psi only helps if we use 'euclidean' on phi/psi.
-        # But the original script uses 'rmsd'.
-        pass
     
     # Always read trajs if using RMSD
     print("Reading trajectories...")
@@ -70,18 +57,81 @@ def run_clustering(
     np.savetxt(assign_file, labels, fmt="%d")
     np.savetxt(centers_file, cluster_centers_, fmt="%d")
     
-    # Plotting needs to happen in output_dir context or we pass full path?
-    # plot_cluster saves to './name.png'. We should change CWD or modify plot_cluster.
-    # For now, let's just run it and let it save to CWD (or change CWD before running workflow).
-    # But better to handle paths.
-    # plot_cluster takes 'name'.
-    # We can temporarily chdir to output_dir if needed.
-    
     original_cwd = os.getcwd()
     try:
         os.chdir(output_dir)
         plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=clustering_name)
         trajs[cluster_centers_].save(pdb_file)
+    finally:
+        os.chdir(original_cwd)
+        
+    return assign_file
+
+def run_aplod(
+    trajListFns='trajlist',
+    atomListFns='atom_indices',
+    topology='native.pdb',
+    homedir='.',
+    iext='xtc',
+    rho_cutoff=1.0,
+    delta_cutoff=1.0,
+    n_neighbors=100,
+    stride=None,
+    output_dir='.'
+):
+    print(f"Running APLoD Clustering with rho={rho_cutoff}, delta={delta_cutoff}")
+    
+    # Check cache for phi/psi
+    phi_file = os.path.join(output_dir, "phi_angles.txt")
+    psi_file = os.path.join(output_dir, "psi_angles.txt")
+    traj_len_file = os.path.join(output_dir, "traj_len.txt")
+    
+    print("Reading trajectories...")
+    trajreader = XTCReader(trajListFns, atomListFns, homedir, iext, topology, nSubSample=stride)
+    trajs = trajreader.trajs
+    traj_len = trajreader.traj_len
+    np.savetxt(traj_len_file, traj_len, fmt="%d")
+    
+    if not (os.path.isfile(phi_file) and os.path.isfile(psi_file)):
+        phi_angles, psi_angles = trajreader.get_phipsi(trajs, psi=[6, 8, 14, 16], phi=[4, 6, 8, 14])
+        np.savetxt(phi_file, phi_angles, fmt="%f")
+        np.savetxt(psi_file, psi_angles, fmt="%f")
+    else:
+        phi_angles = np.loadtxt(phi_file, dtype=np.float32)
+        psi_angles = np.loadtxt(psi_file, dtype=np.float32)
+
+    # Use Phi/Psi for APLoD because RMSD is broken/disabled in APLoD without knnn
+    print("Clustering with APLoD (using Phi/Psi angles)...")
+    data = np.column_stack((phi_angles, psi_angles))
+    
+    cluster = APLoD(rho_cutoff=rho_cutoff, delta_cutoff=delta_cutoff, n_neighbors=n_neighbors, metric='euclidean')
+    cluster.fit(data)
+
+    labels = cluster.labels_
+    n_microstates = len(set(labels)) - (1 if -1 in labels else 0)
+    print(f'Estimated number of clusters: {n_microstates}')
+
+    cluster_centers_indices = cluster.cluster_centers_
+    # For APLoD, cluster_centers_ are indices into the data
+    
+    clustering_name = "aplod_n_" + str(n_microstates)
+    
+    # Save outputs
+    assign_file = os.path.join(output_dir, f"assignments_{clustering_name}.txt")
+    centers_file = os.path.join(output_dir, f"cluster_centers_{clustering_name}.txt")
+    pdb_file = os.path.join(output_dir, "cluster_centers.pdb")
+    
+    np.savetxt(assign_file, labels, fmt="%d")
+    # Save indices of centers
+    np.savetxt(centers_file, cluster_centers_indices, fmt="%d")
+    
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(output_dir)
+        plot_cluster(labels=labels, phi_angles=phi_angles, psi_angles=psi_angles, name=clustering_name)
+        # Check if indices are valid before saving pdb
+        if len(cluster_centers_indices) > 0:
+             trajs[cluster_centers_indices].save(pdb_file)
     finally:
         os.chdir(original_cwd)
         

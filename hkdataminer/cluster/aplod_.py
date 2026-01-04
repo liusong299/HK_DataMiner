@@ -15,12 +15,13 @@ from sklearn.utils import check_array
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics.pairwise import pairwise_distances_argmin
 from sklearn.utils.validation import check_is_fitted
-from metrics.pairwise import pairwise_distances
+from ..metrics.pairwise import pairwise_distances
 from functools import reduce
 # ===============================================================================
 # LOCAL IMPORTS:
 #import knn as knnn
 # ===============================================================================
+import faiss
 
 def FaissNearestNeighbors(X, eps, min_samples, nlist, nprobe, return_distance=False, IVFFlat=True, GPU=False):
     dimension = X.shape[1]
@@ -88,31 +89,35 @@ def run_knn(X, n_neighbors=100, n_samples=1000, metric='rmsd', algorithm='vp_tre
     #    X = check_array(X, accept_sparse='csr')
     #print "Calculating pairwise ", metric, " distances of ", n_samples, " samples..."
     t0 = time.time()
-    if metric is "rmsd":
-        samples = random.sample(list(X), n_samples)
-        whole_samples= reduce(operator.add, (samples[i] for i in range(len(samples))))
+    if metric == "rmsd":
+        # samples = random.sample(list(X), n_samples)
+        # whole_samples= reduce(operator.add, (samples[i] for i in range(len(samples))))
+        # Abandoning RMSD path as per instruction since knnn is missing
+        raise NotImplementedError("RMSD metric is not supported in this APLoD version (missing knnn). Please use Euclidean on featurized data.")
     else:
         whole_samples = random.sample(list(X), n_samples)
+    
     sample_dist_metric = pairwise_distances( whole_samples, whole_samples, metric=metric )
     t1 = time.time()
-    #print "time:", t1-t0,
-    #print "Done."
+    #print("time:", t1-t0)
+    #print("Done.")
 
     # Calculate neighborhood for all samples. This leaves the original point
     # in, which needs to be considered later
 
-    #print "Calculating knn..."
+    #print("Calculating knn...")
     t0 = time.time()
-    if metric is 'rmsd':
-        shape_x = np.shape(X.xyz)
-        knn = knnn.vp_tree_parallel( np.reshape(X.xyz, (shape_x[0] * shape_x[1] * shape_x[2])), shape_x[1] * 3, "rmsd_serial" )
-        distances_, indices = knn.query( np.linspace(0, len(X.xyz)-1, len(X.xyz), dtype='int'), n_neighbors )
+    
+    if metric == 'rmsd':
+        # Abandoned path
+        pass
     else:
-        if algorithm is 'vp_tree':
-            shape_x = np.shape(X)
-            #print "shape_x:", shape_x
-            knn = knnn.vp_tree_parallel( np.reshape(X, (shape_x[0] * shape_x[1])), shape_x[1], "euclidean_serial" )
-            distances_, indices = knn.query( np.linspace(0, len(X)-1, len(X), dtype='int'), n_neighbors )
+        if algorithm == 'vp_tree':
+            # Missing knnn, fallback to auto/sklearn
+            print("Warning: vp_tree algorithm requested but knnn module missing. Falling back to sklearn NearestNeighbors.")
+            neighbors_model = NearestNeighbors(n_neighbors=n_neighbors, algorithm='auto', metric=metric)
+            neighbors_model.fit(X)
+            distances_, indices = neighbors_model.kneighbors(X, n_neighbors=n_neighbors, return_distance=True)
         else:
             neighbors_model = NearestNeighbors(n_neighbors=n_neighbors, algorithm=algorithm, metric=metric)
             neighbors_model.fit(X)
@@ -120,12 +125,8 @@ def run_knn(X, n_neighbors=100, n_samples=1000, metric='rmsd', algorithm='vp_tre
 
 
     t1 = time.time()
-    #print "time:", t1-t0,
-    #print "Done."
-    # Calculate distance between sample, and find dc
-    # np.savetxt("./sample_dist_metric.txt", sample_dist_metric, fmt="%f")
-    #np.savetxt("./distances_.txt", distances_, fmt="%f")
-    #np.savetxt("./indices.txt", indices, fmt="%d")
+    #print("time:", t1-t0)
+    #print("Done.")
     return sample_dist_metric, distances_, indices
 
 def calculate_rho(X_len, n_neighbors, dc_2, indices, distances_):
@@ -209,10 +210,10 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
 
     if rho_cutoff < 0.0:
        raise ValueError("rho must be non negative!")
-    if delta_cutoff < 0.0 and not delta_cutoff == None:
+    if delta_cutoff < 0.0 and delta_cutoff is not None:
        raise ValueError("delta must be non negative!")
 
-    if algorithm is not "precomputed":
+    if algorithm != "precomputed":
             sample_dist_metric, distances_, indices = run_knn(X=X, n_neighbors=n_neighbors, n_samples=n_samples, metric=metric, algorithm=algorithm)
     else:
         if sample_dist_metric is None:
@@ -262,7 +263,7 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
     max_rho = rho[rho_argsorted[0]]
     max_dist = np.max(distances_)
 
-    if delta_cutoff == None:
+    if delta_cutoff is None:
         delta_cutoff = max_dist
     delta = [max_dist for i in range(X_len)]
     nneigh = [i for i in range(X_len)]
@@ -285,10 +286,10 @@ def aplod_clustering(X, weight=None, rho_cutoff=1.0, delta_cutoff=1.0, percent=0
     
     distances_index = int(1.0 * len(distances_sorted)) - 1
     delta_cut = distances_sorted[distances_index]
-    #print "rho_cut:", rho_cut, rho_cut_index
-    #print "delta_cut", delta_cut, distances_index
+    #print("rho_cut:", rho_cut, rho_cut_index)
+    #print("delta_cut", delta_cut, distances_index)
  
-    if metric is "rmsd:":
+    if metric == "rmsd:":
         labels_ = -np.ones(X.xyz.shape[0], dtype=np.intp)
     else:
         labels_ = -np.ones(X_len, dtype=np.intp)
