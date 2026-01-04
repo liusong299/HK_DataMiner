@@ -22,7 +22,7 @@ The core highlight of this package is **APLoD** (Adaptive Partitioning by Local 
 
 **Adaptive Partitioning by Local Density-peaks (APLoD)** addresses the challenge of clustering ultra-large MD datasets containing millions of conformations.
 
-![APLoD Flowchart](https://onlinelibrary.wiley.com/cms/asset/e2d008e6-f952-47e8-a2cc-9d3f85c6966c/jcc24664-fig-0002-m.jpg)
+![APLoD Flowchart](docs/images/aplod_flowchart.jpg)
 *Figure: Flowchart of the APLoD algorithm. The kNN search is efficiently performed by pre-organizing the dataset into a VP-tree structure. (Adapted from Liu et al., J. Comput. Chem. 2017)*
 
 ### Key Advantages:
