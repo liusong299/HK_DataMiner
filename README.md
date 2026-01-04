@@ -5,6 +5,15 @@
 
 **HKDataMiner** is a python library for constructing statistical models for biomolecular dynamics data. It is developed by **Prof. Xuhui Huang's Group** at HKUST.
 
+## Project History & Modernization
+
+**HKDataMiner** was originally initiated in **2014** and built upon the Python 2 ecosystem. After serving the community for several years, the project entered a dormant phase without active maintenance.
+
+**Recently, we have revitalized the project with a major modernization:**
+*   **Python 3.10+ Support**: The codebase has been fully ported from Python 2 to Python 3.10, ensuring compatibility with modern scientific computing stacks.
+*   **Modern Engineering**: We reorganized the package structure, added `mamba` environment support, and introduced a unified CLI (`hkdm`) for better usability.
+*   **Active Maintenance**: We are committed to further maintaining and updating HKDataMiner to support modern computational workflows and new research needs.
+
 The core highlight of this package is **APLoD** (Adaptive Partitioning by Local Density-peaks), a highly efficient clustering algorithm designed specifically for analyzing large-scale Molecular Dynamics (MD) trajectories and constructing Markov State Models (MSMs).
 
 ## Why APLoD?
@@ -126,4 +135,3 @@ This project is licensed under the **Apache 2.0 License**. See the [LICENSE](LIC
 
 *   **Prof. Xuhui Huang** - *Project Leader*
 *   **Dr. Song Liu** - *Developer*
-*   **Mr. Hanlin Gu** - *Developer*
