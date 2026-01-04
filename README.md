@@ -137,4 +137,3 @@ This project is licensed under the **Apache 2.0 License**. See the [LICENSE](LIC
 
 *   **Prof. Xuhui Huang** - *Project Leader* - [University of Wisconsin–Madison](https://huang.chem.wisc.edu/xuhui-huang/) (Previously HKUST)
 *   **Dr. Song Liu** - *Developer* - [song.liu@connect.ust.hk](mailto:song.liu@connect.ust.hk)
-*   **Mr. Hanlin Gu** - *Developer*
